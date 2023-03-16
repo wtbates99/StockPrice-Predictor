@@ -176,27 +176,25 @@ def model_predictor():
     global cnt
     cnt = 0
     model_predictor_starttime = datetime.now()
-    
     final_df = pd.DataFrame(columns = 
-    ['Date and hour',
-    'Ticker', 
-    'Yesterdays Predicted Close', 
-    'Yesterdays Close', 
-    'Todays Predicted Close', 
-    'Todays Actual Close', 
-    'Difference', 
-    'Tomorrows Predicted Close', 
-    'Sentiment Score'
-    ])
-        
-        
-    for i in tickerlist:
+        ['Date and hour',
+        'Ticker', 
+        'Yesterdays Predicted Close', 
+        'Yesterdays Close', 
+        'Todays Predicted Close', 
+        'Todays Actual Close', 
+        'Difference', 
+        'Tomorrows Predicted Close', 
+        'Sentiment Score'
+        ])
+
+    while cnt < len(tickerlist):
         data, data_today, ticker = data_collector()
-    
+
         ###open model###
         with open('model_' + ticker + '.pkl', 'rb') as f:
             model = pickle.load(f)
-            
+
         #todays predictions
         data_full = data.drop(['Actual_Close'], axis=1)
         y_pred = model.predict(data_full.tail(2))
@@ -204,15 +202,15 @@ def model_predictor():
         y_pred_tmrw = model.predict(data_full.tail(1))
         close_prev = data_full.copy()
         yest_close_fixed = close_prev.tail(1)["Close"]
-        
+
         #tomorrows predictions
         data_today = data_today.drop(['Actual_Close'], axis=1)
         y_pred_tmrw_tmrw = model.predict(data_today.tail(1))
-        
+
         #sentiment analysis
         averagescore = sentiment(ticker)
-    
-    final_df = final_df.append(
+
+        final_df = final_df.append(
         {'Date and hour' :     time.strftime("%m_%d_%Y_%H"),
         'Ticker' : ticker,
         'Yesterdays Predicted Close' : round(float(y_pred_fixed), 2),
@@ -223,8 +221,8 @@ def model_predictor():
         'Tomorrows Predicted Close' : round(float(y_pred_tmrw_tmrw), 2),
         'Sentiment Score' : averagescore},
         ignore_index = True)
-    print(ticker, "close predicted \n--------------------------------------------")
-    cnt = cnt + 1
+        print(ticker, "close predicted \n--------------------------------------------")
+        cnt = cnt + 1
         
     return final_df, model_predictor_starttime
     
