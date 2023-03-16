@@ -31,6 +31,9 @@ from bs4 import BeautifulSoup
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+from os.path import exists as file_exists
+
+
 #where to save results
 full_starttime = datetime.now()
 filepath_linux = ('C:/Users/Admin/OneDrive/Coding/Predictions/GBR/')
@@ -40,6 +43,8 @@ filepath_windows = ('C:/Users/Will/OneDrive/Coding/Predictions/GBR/')
 datafilter_days = 400
 period = "max"
 interval = "1d"
+#generate a new model (1 = YES/0 = NO)
+if_model_already_exists_generate_new_model = 1
 
 #tickers
 tickerlist = ['XLE',
@@ -129,47 +134,94 @@ def model_creator():
     for i in tickerlist:
         model_creator_starttime = datetime.now()
         data_full, data_today, ticker = data_collector()
-
-        #model and data
-        model = GradientBoostingRegressor()
-        y = data_full['Actual_Close']
-        X = data_full.drop(['Actual_Close'], axis=1)
         
-        #make training set - 25% test data
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=1)
+        if if_model_already_exists_generate_new_model == 0:
+            if file_exists(filepath_windows + time.strftime("%m_%d_%Y_%H") + ' Daily ETF Prediction' + '.csv') or (filepath_linux + time.strftime("%m_%d_%Y_%H") + ' Daily ETF Prediction' + '.csv'):
+                print('Model for ' + ticker +  ' already exists...')
+                cnt = cnt + 1
+            else:
+                print('Generating model for ' + ticker)
+                #model and data
+                model = GradientBoostingRegressor()
+                y = data_full['Actual_Close']
+                X = data_full.drop(['Actual_Close'], axis=1)
+                
+                #make training set - 25% test data
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=1)
 
-        #parameters to be tuned
-        parameters = {
-                          'learning_rate' : sp_randFloat(),
-                          'subsample' : sp_randFloat(),
-                          'n_estimators' : sp_randInt(100, 500),
-                          'min_samples_split' : sp_randInt(2, 6),
-                          'min_samples_leaf' : sp_randInt(1, 3),
-                          'max_depth'    : sp_randInt(2, 8)
+                #parameters to be tuned
+                parameters = {
+                                  'learning_rate' : sp_randFloat(),
+                                  'subsample' : sp_randFloat(),
+                                  'n_estimators' : sp_randInt(100, 500),
+                                  'min_samples_split' : sp_randInt(2, 6),
+                                  'min_samples_leaf' : sp_randInt(1, 3),
+                                  'max_depth'    : sp_randInt(2, 8)
 
-                         }
-        print("-------------------------------------------- \nOptimization for:", ticker)  
-        randm_src = RandomizedSearchCV(estimator=model, param_distributions = parameters,
-                                       cv = 5, n_iter = 10, verbose = 1, n_jobs=-1, random_state=1)
-        
-        randm_src.fit(X_train, y_train)
-        print("Optimization complete for:", ticker)
-        print("Model fit for:", ticker + "\n----------------")
-        
-        #prediction and model statistics
-        y_pred = randm_src.predict(X_test)
-        print("Model statistics for:" + ticker + "\n----------------")
-        print('Mean Absolute Error:', mean_absolute_error(y_test, y_pred))
-        print('Mean Squared Error:', mean_squared_error(y_test, y_pred))
-        print('Root Mean Squared Error:', np.sqrt(mean_squared_error(y_test, y_pred)))
+                                 }
+                print("-------------------------------------------- \nOptimization for:", ticker)  
+                randm_src = RandomizedSearchCV(estimator=model, param_distributions = parameters,
+                                               cv = 5, n_iter = 10, verbose = 1, n_jobs=-1, random_state=1)
+                
+                randm_src.fit(X_train, y_train)
+                print("Optimization complete for:", ticker)
+                print("Model fit for:", ticker + "\n----------------")
+                
+                #prediction and model statistics
+                y_pred = randm_src.predict(X_test)
+                print("Model statistics for:" + ticker + "\n----------------")
+                print('Mean Absolute Error:', mean_absolute_error(y_test, y_pred))
+                print('Mean Squared Error:', mean_squared_error(y_test, y_pred))
+                print('Root Mean Squared Error:', np.sqrt(mean_squared_error(y_test, y_pred)))
 
-        ###SAVE THE MODEL###
-        with open('model_' + ticker + '.pkl', 'wb') as f:
-            pickle.dump(randm_src,f)
-        print("model", ticker, "saved")
-        print("\nRuntime for:", ticker, datetime.now()-model_creator_starttime, "\n--------------------------------------------")
-        cnt = cnt + 1
-        
+                ###SAVE THE MODEL###
+                with open('model_' + ticker + '.pkl', 'wb') as f:
+                    pickle.dump(randm_src,f)
+                print("model", ticker, "saved")
+                print("\nRuntime for:", ticker, datetime.now()-model_creator_starttime, "\n--------------------------------------------")
+                cnt = cnt + 1
+        else:
+            print('Generating model for ' + ticker)
+            #model and data
+            model = GradientBoostingRegressor()
+            y = data_full['Actual_Close']
+            X = data_full.drop(['Actual_Close'], axis=1)
+            
+            #make training set - 25% test data
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=1)
+
+            #parameters to be tuned
+            parameters = {
+                              'learning_rate' : sp_randFloat(),
+                              'subsample' : sp_randFloat(),
+                              'n_estimators' : sp_randInt(100, 500),
+                              'min_samples_split' : sp_randInt(2, 6),
+                              'min_samples_leaf' : sp_randInt(1, 3),
+                              'max_depth'    : sp_randInt(2, 8)
+
+                             }
+            print("-------------------------------------------- \nOptimization for:", ticker)  
+            randm_src = RandomizedSearchCV(estimator=model, param_distributions = parameters,
+                                           cv = 5, n_iter = 10, verbose = 1, n_jobs=-1, random_state=1)
+            
+            randm_src.fit(X_train, y_train)
+            print("Optimization complete for:", ticker)
+            print("Model fit for:", ticker + "\n----------------")
+            
+            #prediction and model statistics
+            y_pred = randm_src.predict(X_test)
+            print("Model statistics for:" + ticker + "\n----------------")
+            print('Mean Absolute Error:', mean_absolute_error(y_test, y_pred))
+            print('Mean Squared Error:', mean_squared_error(y_test, y_pred))
+            print('Root Mean Squared Error:', np.sqrt(mean_squared_error(y_test, y_pred)))
+
+            ###SAVE THE MODEL###
+            with open('model_' + ticker + '.pkl', 'wb') as f:
+                pickle.dump(randm_src,f)
+            print("model", ticker, "saved")
+            print("\nRuntime for:", ticker, datetime.now()-model_creator_starttime, "\n--------------------------------------------")
+            cnt = cnt + 1
+
     global model_creator_runtime
     model_creator_runtime = (datetime.now() - model_creator_starttime)
 
@@ -293,6 +345,8 @@ def predictor_and_printer():
     global model_predictor_runtime 
     model_predictor_runtime = (datetime.now()-model_predictor_starttime) 
     print("-------------------------------------------- \nResults Printed and Saved in OneDrive")
+
+
 
 
 model_creator()
