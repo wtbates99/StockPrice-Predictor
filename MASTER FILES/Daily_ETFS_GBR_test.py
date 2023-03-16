@@ -1,55 +1,61 @@
+#basic libraries
 import os
 import time
 from datetime import datetime
 import csv
-
+#stock data, plots, dataframes
 import yfinance as yf
 import matplotlib.pyplot as plt
 import pandas as pd
-
+#array math and stats
 import numpy as np
 import scipy
 from scipy import stats
 from scipy.stats import uniform as sp_randFloat
 from scipy.stats import randint as sp_randInt
-
+#machine learning models
 from sklearn.metrics import precision_score
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import pickle
-
+#sentiment analysis
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-
+#http requests and decoders
 import requests as request
 from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
-
+#warning remover
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-#^^^ LIBRARIES AND PACKAGES ^^^#
-###############################################################################################
-#vvv CODEBASE vvv#
-
 #where to save results
-start = datetime.now()
+full_starttime = datetime.now()
 filepath_linux = ('C:/Users/Admin/OneDrive/Coding/Predictions/GBR/')
 filepath_windows = ('C:/Users/Will/OneDrive/Coding/Predictions/GBR/')
 
 #basic inputs
 datafilter_days = 400
-period = "700d"
+period = "100d"
 
 #tickers
 tickerlist = ['XLE',
-
-              ]
-#print tickerlist
-print('--------------------------------------------\n' 'Tickers: ' + str(tickerlist) + '\n--------------------------------------------\n')
-
+              'XLB', 
+              'XLI', 
+              'XLY', 
+              'XLP', 
+              'XLV', 
+              'XLF', 
+              'SMH', 
+              'XTL', 
+              'XLU', 
+              'IYR'
+                ]
+#   printtickerlist
+print('--------------------------------------------\n' 'Tickers: ' + str(tickerlist) + '\n--------------------------------------------\n')            
+          
 def data_collector():
     ticker = tickerlist[cnt].upper()
     stock = yf.Ticker(ticker)
@@ -116,11 +122,11 @@ def data_remove(x):
     x = x.drop(['Low'], axis=1)
     return x
     
-def optimizer():
+def model_creator():
     global cnt
     cnt = 0
     for i in tickerlist:
-        startfunction = datetime.now()
+        model_creator_starttime = datetime.now()
         data_full, data_today, ticker = data_collector()
 
         #model and data
@@ -160,28 +166,30 @@ def optimizer():
         with open('model_' + ticker + '.pkl', 'wb') as f:
             pickle.dump(randm_src,f)
         print("model", ticker, "saved")
-        print("\nRuntime for:", ticker, datetime.now()-startfunction, "\n--------------------------------------------")
+        print("\nRuntime for:", ticker, datetime.now()-model_creator_starttime, "\n--------------------------------------------")
         cnt = cnt + 1
         
-    global optiruntime
-    optiruntime = (datetime.now() - startfunction)
+    global model_creator_runtime
+    model_creator_runtime = (datetime.now() - model_creator_starttime)
 
-def guesser():
+def model_predictor():
     global cnt
     cnt = 0
-    startguesser = datetime.now()
-    final_df = pd.DataFrame(columns = 
-        ['Date and hour',
-        'Ticker', 
-        'Yesterdays Predicted Close', 
-        'Yesterdays Close', 
-        'Todays Predicted Close', 
-        'Todays Actual Close', 
-        'Difference', 
-        'Tomorrows Predicted Close', 
-        'Sentiment Score'
-        ])
+    model_predictor_starttime = datetime.now()
     
+    final_df = pd.DataFrame(columns = 
+    ['Date and hour',
+    'Ticker', 
+    'Yesterdays Predicted Close', 
+    'Yesterdays Close', 
+    'Todays Predicted Close', 
+    'Todays Actual Close', 
+    'Difference', 
+    'Tomorrows Predicted Close', 
+    'Sentiment Score'
+    ])
+        
+        
     for i in tickerlist:
         data, data_today, ticker = data_collector()
     
@@ -218,7 +226,7 @@ def guesser():
     print(ticker, "close predicted \n--------------------------------------------")
     cnt = cnt + 1
         
-    return final_df, startguesser
+    return final_df, model_predictor_starttime
     
 def sentiment(ticker):
     ###SENTIMENT ANALYSIS###
@@ -271,9 +279,9 @@ def sentiment(ticker):
     averagescore = float(mean_scores)
     return averagescore
 
-def estimator_and_printer():
+def predictor_and_printer():
     now_ = time.strftime("%m_%d_%Y_%H")
-    final_df, startguesser = guesser()
+    final_df, model_predictor_starttime = model_predictor()
     print(final_df)
     
     try:
@@ -283,17 +291,17 @@ def estimator_and_printer():
     except OSError:
         final_df.to_csv(now_ + ' Daily ETF Prediction' + '.csv', index=False)
    
-    global guessertime 
-    guessertime = (datetime.now()-startguesser) 
+    global model_predictor_runtime 
+    model_predictor_runtime = (datetime.now()-model_predictor_starttime) 
     print("-------------------------------------------- \nResults Printed and Saved in OneDrive")
 
 
-optimizer()
-estimator_and_printer()
+model_creator()
+predictor_and_printer()
 
-print("Optimization Runtime: ", optiruntime)
-print("Guesser Runtime: ", guessertime)  
-print("Full Runtime: ", datetime.now()-start, "\n--------------------------------------------")
+print("Creation and Optimization Runtime: ", model_creator_runtime)
+print("Predictor Runtime: ", model_predictor_runtime)  
+print("Full Runtime: ", datetime.now()-full_starttime, "\n--------------------------------------------")
 
 
 
