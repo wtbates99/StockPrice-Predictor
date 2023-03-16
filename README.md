@@ -1,4 +1,4 @@
-# MLTSK 
+# MLTSK (Machine Learning Trader SciKitlearn)
 
 ## pip dependencies install: 
 Navigate to file location and then run:
