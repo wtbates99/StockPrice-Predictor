@@ -48,17 +48,7 @@ if_model_already_exists_generate_new_model = 1
 
 #tickers
 tickerlist = ['XLE',
-              'XLB', 
-              'XLI', 
-              'XLY', 
-              'XLP', 
-              'XLV', 
-              'XLF', 
-              'SMH', 
-              'XTL', 
-              'XLU', 
-              'IYR'
-                ]
+              'XLB']
 #   printtickerlist
 print('--------------------------------------------\n' 'Tickers: ' + str(tickerlist) + '\n--------------------------------------------\n')            
           
@@ -87,12 +77,13 @@ def data_collector():
     ###adding in more data
     data_full = moredata(data_prev)
     data_today = moredata(data_today)
-
+    close_data = moredata(data_prev)
+    
     ###removing features
     data_full = data_remove(data_full)
     data_today = data_remove(data_today)
 
-    return data_full, data_today, ticker
+    return data_full, data_today, close_data, ticker
     
 def moredata(data_alter):
     ###rolling means/more specific data###
@@ -125,7 +116,7 @@ def moredata(data_alter):
     return data_alter
 
 def data_remove(x):
-    x = x.drop(['Low'], axis=1)
+    x = x.drop(['Close'], axis=1)
     return x
     
 def model_creator(data_full, ticker, model_creator_starttime, cnt):
@@ -174,7 +165,7 @@ def model_run():
     cnt = 0
     for i in tickerlist:
         model_creator_starttime = datetime.now()
-        data_full, data_today, ticker = data_collector()
+        data_full, data_today, close_data, ticker = data_collector()
         
         if if_model_already_exists_generate_new_model == 0:
             if file_exists(filepath_windows + time.strftime("%m_%d_%Y_%H") + ' Daily ETF Prediction' + '.csv') or (filepath_linux + time.strftime("%m_%d_%Y_%H") + ' Daily ETF Prediction' + '.csv'):
@@ -206,7 +197,7 @@ def model_predictor():
         ])
 
     while cnt < len(tickerlist):
-        data, data_today, ticker = data_collector()
+        data, data_today, close_data, ticker = data_collector()
 
         ###open model###
         with open('model_' + ticker + '.pkl', 'rb') as f:
@@ -217,8 +208,7 @@ def model_predictor():
         y_pred = model.predict(data_full.tail(2))
         y_pred_fixed = np.delete(y_pred, 1)
         y_pred_tmrw = model.predict(data_full.tail(1))
-        close_prev = data_full.copy()
-        yest_close_fixed = close_prev.tail(1)["Close"]
+        yest_close_fixed = close_data.tail(1)["Close"]
 
         #tomorrows predictions
         data_today = data_today.drop(['Actual_Close'], axis=1)
