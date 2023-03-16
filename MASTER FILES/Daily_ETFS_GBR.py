@@ -128,7 +128,48 @@ def data_remove(x):
     x = x.drop(['Low'], axis=1)
     return x
     
-def model_creator():
+def model_creator(data_full, ticker, model_creator_starttime, cnt):
+    print('Generating model for ' + ticker)
+    #model and data
+    model = GradientBoostingRegressor()
+    y = data_full['Actual_Close']
+    X = data_full.drop(['Actual_Close'], axis=1)
+    
+    #make training set - 25% test data
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=1)
+
+    #parameters to be tuned
+    parameters = {
+                      'learning_rate' : sp_randFloat(),
+                      'subsample' : sp_randFloat(),
+                      'n_estimators' : sp_randInt(100, 500),
+                      'min_samples_split' : sp_randInt(2, 6),
+                      'min_samples_leaf' : sp_randInt(1, 3),
+                      'max_depth'    : sp_randInt(2, 8)
+
+                     }
+    print("-------------------------------------------- \nOptimization for:", ticker)  
+    randm_src = RandomizedSearchCV(estimator=model, param_distributions = parameters,
+                                   cv = 5, n_iter = 10, verbose = 1, n_jobs=-1, random_state=1)
+    
+    randm_src.fit(X_train, y_train)
+    print("Optimization complete for:", ticker)
+    print("Model fit for:", ticker + "\n----------------")
+    
+    #prediction and model statistics
+    y_pred = randm_src.predict(X_test)
+    print("Model statistics for:" + ticker + "\n----------------")
+    print('Mean Absolute Error:', mean_absolute_error(y_test, y_pred))
+    print('Mean Squared Error:', mean_squared_error(y_test, y_pred))
+    print('Root Mean Squared Error:', np.sqrt(mean_squared_error(y_test, y_pred)))
+
+    ###SAVE THE MODEL###
+    with open('model_' + ticker + '.pkl', 'wb') as f:
+        pickle.dump(randm_src,f)
+    print("model", ticker, "saved")
+    print("\nRuntime for:", ticker, datetime.now()-model_creator_starttime, "\n--------------------------------------------")
+
+def model_run():
     global cnt
     cnt = 0
     for i in tickerlist:
@@ -140,90 +181,13 @@ def model_creator():
                 print('Model for ' + ticker +  ' already exists...')
                 cnt = cnt + 1
             else:
-                print('Generating model for ' + ticker)
-                #model and data
-                model = GradientBoostingRegressor()
-                y = data_full['Actual_Close']
-                X = data_full.drop(['Actual_Close'], axis=1)
-                
-                #make training set - 25% test data
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=1)
-
-                #parameters to be tuned
-                parameters = {
-                                  'learning_rate' : sp_randFloat(),
-                                  'subsample' : sp_randFloat(),
-                                  'n_estimators' : sp_randInt(100, 500),
-                                  'min_samples_split' : sp_randInt(2, 6),
-                                  'min_samples_leaf' : sp_randInt(1, 3),
-                                  'max_depth'    : sp_randInt(2, 8)
-
-                                 }
-                print("-------------------------------------------- \nOptimization for:", ticker)  
-                randm_src = RandomizedSearchCV(estimator=model, param_distributions = parameters,
-                                               cv = 5, n_iter = 10, verbose = 1, n_jobs=-1, random_state=1)
-                
-                randm_src.fit(X_train, y_train)
-                print("Optimization complete for:", ticker)
-                print("Model fit for:", ticker + "\n----------------")
-                
-                #prediction and model statistics
-                y_pred = randm_src.predict(X_test)
-                print("Model statistics for:" + ticker + "\n----------------")
-                print('Mean Absolute Error:', mean_absolute_error(y_test, y_pred))
-                print('Mean Squared Error:', mean_squared_error(y_test, y_pred))
-                print('Root Mean Squared Error:', np.sqrt(mean_squared_error(y_test, y_pred)))
-
-                ###SAVE THE MODEL###
-                with open('model_' + ticker + '.pkl', 'wb') as f:
-                    pickle.dump(randm_src,f)
-                print("model", ticker, "saved")
-                print("\nRuntime for:", ticker, datetime.now()-model_creator_starttime, "\n--------------------------------------------")
+                model_creator(data_full,ticker, model_creator_starttime, cnt)
                 cnt = cnt + 1
         else:
-            print('Generating model for ' + ticker)
-            #model and data
-            model = GradientBoostingRegressor()
-            y = data_full['Actual_Close']
-            X = data_full.drop(['Actual_Close'], axis=1)
-            
-            #make training set - 25% test data
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=1)
-
-            #parameters to be tuned
-            parameters = {
-                              'learning_rate' : sp_randFloat(),
-                              'subsample' : sp_randFloat(),
-                              'n_estimators' : sp_randInt(100, 500),
-                              'min_samples_split' : sp_randInt(2, 6),
-                              'min_samples_leaf' : sp_randInt(1, 3),
-                              'max_depth'    : sp_randInt(2, 8)
-
-                             }
-            print("-------------------------------------------- \nOptimization for:", ticker)  
-            randm_src = RandomizedSearchCV(estimator=model, param_distributions = parameters,
-                                           cv = 5, n_iter = 10, verbose = 1, n_jobs=-1, random_state=1)
-            
-            randm_src.fit(X_train, y_train)
-            print("Optimization complete for:", ticker)
-            print("Model fit for:", ticker + "\n----------------")
-            
-            #prediction and model statistics
-            y_pred = randm_src.predict(X_test)
-            print("Model statistics for:" + ticker + "\n----------------")
-            print('Mean Absolute Error:', mean_absolute_error(y_test, y_pred))
-            print('Mean Squared Error:', mean_squared_error(y_test, y_pred))
-            print('Root Mean Squared Error:', np.sqrt(mean_squared_error(y_test, y_pred)))
-
-            ###SAVE THE MODEL###
-            with open('model_' + ticker + '.pkl', 'wb') as f:
-                pickle.dump(randm_src,f)
-            print("model", ticker, "saved")
-            print("\nRuntime for:", ticker, datetime.now()-model_creator_starttime, "\n--------------------------------------------")
+            model_creator(data_full, ticker, model_creator_starttime, cnt)
             cnt = cnt + 1
-
     global model_creator_runtime
-    model_creator_runtime = (datetime.now() - model_creator_starttime)
+    model_creator_runtime = (datetime.now() - model_creator_starttime, cnt)
 
 def model_predictor():
     global cnt
@@ -349,7 +313,7 @@ def predictor_and_printer():
 
 
 
-model_creator()
+model_run()
 predictor_and_printer()
 
 print("Creation and Optimization Runtime: ", model_creator_runtime)
