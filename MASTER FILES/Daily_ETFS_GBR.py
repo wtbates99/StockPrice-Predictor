@@ -39,6 +39,7 @@ filepath_windows = ('C:/Users/Will/OneDrive/Coding/Predictions/GBR/')
 #basic inputs
 datafilter_days = 400
 period = "max"
+interval = "1d"
 
 #tickers
 tickerlist = ['XLE',
@@ -60,7 +61,7 @@ def data_collector():
     ticker = tickerlist[cnt].upper()
     stock = yf.Ticker(ticker)
     global stock_hist
-    stock_hist = stock.history(period=period, interval="1d")
+    stock_hist = stock.history(period=period, interval=interval)
 
     ###moving data to find out difference in prices between two days###
     stock_prev = stock_hist.copy()
@@ -100,7 +101,7 @@ def moredata(data_alter):
 
     ###JOINING IN THE S&P###
     sp_period = len(data_alter) + 1
-    sp = spy.history(period=str(sp_period) + "d", interval="1d")
+    sp = spy.history(period=str(sp_period) + "d", interval=interval)
     data_alter["weekly_mean"] = weekly_mean / data_alter["Close"]
     data_alter["quarterly_mean"] = quarterly_mean / data_alter["Close"]
     data_alter["annual_mean"] = annual_mean / data_alter["Close"]
