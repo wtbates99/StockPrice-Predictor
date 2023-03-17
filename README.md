@@ -2,7 +2,7 @@
 
 
 ## Purpose
-MLTSK is designed to be a template that can be used to make stock predicitons using machine learning through the library scikit-learn. We will collect and clean historical stock data using pandas and yFinance, after which we will apply several scikit-learn classifiers and regression models to discover relationships between stock fundamentals and the subsequent daily change of closing price. 
+MLTSK is designed to be a template that can be used to make stock predictions using machine learning through the library scikit-learn. We will collect and clean historical stock data using pandas and yFinance, after which we will apply several scikit-learn classifiers and regression models to discover relationships between stock fundamentals and the subsequent daily change of closing price. 
 
 
 I do **NOT** recommend live trading based off of predictions from this exact code; however, you can make the changes needed to make this deployable. This is *purely* an educational project, and data may be deceptive -- trade at your **OWN** risk **ALWAYS**!
