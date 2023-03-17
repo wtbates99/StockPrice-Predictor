@@ -1,5 +1,25 @@
 # MLTSK (Machine Learning Trader SciKitlearn)
 
+
+## Purpose
+MLTSK is designed to be a template that can be used to make stock predicitons using machine learning through the library scikit-learn. We will collect and clean historical stock data using pandas and yFinance, after which we will apply several scikit-learn classifiers and regression models to discover relationships between stock fundamentals and the subsequent daily change of closing price. 
+
+
+I do **NOT** recommend live trading based off of predictions from this exact code; however, you can make the changes needed to make this deployable. This is *purely* an educational project, and data may be deceptive -- trade at your **OWN** risk **ALWAYS**!
+#### Overview 
+The overall workflow to use machine learning to make stocks prediction is as follows:
+
+1. Acquire historical fundamental data – these are the features or predictors
+2. Acquire historical stock price data – this is will make up the dependent variable, or label (what we are trying to predict).
+3. Preprocess data
+4. Use a machine learning model to learn from the data
+5. Acquire current fundamental data
+6. Generate predictions from current fundamental data
+
+
+This is a very generalised overview, but in principle this is all you need to build a fundamentals-based ML stock predictor.
+
+
 ## pip dependencies install: 
 #### Navigate to file location and then run:
   * WINDOWS: py -m pip install -r requirements.txt 
@@ -13,6 +33,7 @@
   * MASTER FILES contain final/test versions of more developed python scripts
   * Newests contains several test files that are related to the most recent crreations
   * Backtesting/ETFS_GradientBoostingRegressor/Random Forest Walk are backups of different types of python scripts
+
 
 
 ## ML_ClosingPrice_Predictors
