@@ -6,10 +6,11 @@ Navigate to file location and then run:
   * LINUX: python -m pip install -r requirements.txt 
 
 ## General Notes
-  * Models will be saved to file location, or set your own filepath under either filepath_windows or filepath_linux
-  * MASTER FILES contain final/test versions of more developed python scripts
-  * Newests contains several test files that are related to the most recent crreations
-  * Backtesting/ETFS_GradientBoostingRegressor/Random Forest Walk are backups of different types of python scripts
+  * Files located in MASTER FILES are usable. Anything with "test" is not stable. Currently the ETS regression method is best.
+  * * Models will be saved to file location, or set your own filepath under either filepath_windows or filepath_linux
+  * * MASTER FILES contain final/test versions of more developed python scripts
+  * * Newests contains several test files that are related to the most recent crreations
+  * * Backtesting/ETFS_GradientBoostingRegressor/Random Forest Walk are backups of different types of python scripts
 
 
 ## ML_ClosingPrice_Predictors
