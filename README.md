@@ -17,3 +17,7 @@ Located under MASTER FILES
   * Different forms of regression and ML programs to predict stock price  
   * Any file with _test.py is the unstable version 
 
+## Optimization_Linux
+ * Can only be used in a UNIX terminal due to library dependancies
+ * Used to find the optimal ML model for data set 
+
